@@ -4,11 +4,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a3a52 0%, #2d1b4e 25%, #3d2342 50%, #1b3d52 75%, #224d52 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            font-family: Arial, sans-serif;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-top: 0;
+        }
+        
+        .box {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .box h2 {
+            margin-top: 0;
+            color: #ffff99;
+        }
+        
+        .box:hover {
+            transform: scale(1.05);
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+    </style>
 </head>
+
 <body>
-    
-</body>
-<h1>welcome to the portfolio</h1>
-<p>hi</p>
+<h1>Welcome to My Portfolio</h1>
+
+<div class="box">
+    <h2>About Me</h2>
+    <p>Hi! I'm a web developer learning HTML, CSS, and JavaScript. I'm passionate about creating beautiful and functional websites.</p>
+</div>
+
+<div class="box">
+    <h2>Skills</h2>
+    <p>HTML5 • CSS3 • JavaScript • Responsive Design</p>
+</div>
+
+<div class="box">
+    <h2>Projects</h2>
+    <p>Coming soon! Check back for my latest projects and work samples.</p>
+</div>
+
+<div class="box">
+    <h2>Contact</h2>
+    <p>Feel free to reach out to me for collaborations or just a friendly hello!</p>
+</div>
 
 </body>
+</html>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #050505;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #0ff;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            text-shadow: 0 0 10px #0ff;
+        }
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            width: 100%;
+            letter-spacing: 2px;
+            animation: blink 1.5s infinite;
+        }
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+            border: 1px solid #333;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h1 style="margin:0;">NEON SURGE</h1>
+        <div>SCORE: <span id="score">0</span></div>
+        <div>BEST: <span id="highScore">0</span></div>
+    </div>
+
+    <div id="instructions">PRESS [SPACE] OR TAP TO JUMP / DOUBLE JUMP</div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const highScoreEl = document.getElementById('highScore');
+
+    // Game Constants
+    const GRAVITY = 0.6;
+    const JUMP_FORCE = -12;
+    const GROUND_Y = 500;
+    
+    // Game State
+    let canvasW = 800;
+    let canvasH = 600;
+    let score = 0;
+    let highScore = localStorage.getItem('neonHigh') || 0;
+    let gameActive = true;
+    let speed = 5;
+    let frame = 0;
+
+    highScoreEl.innerText = highScore;
+
+    const player = {
+        x: 100,
+        y: GROUND_Y - 40,
+        w: 30,
+        h: 40,
+        dy: 0,
+        jumps: 0,
+        color: '#f0f'
+    };
+
+    let obstacles = [];
+
+    function init() {
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+    }
+
+    function spawnObstacle() {
+        const height = 30 + Math.random() * 50;
+        obstacles.push({
+            x: canvasW,
+            y: GROUND_Y - height,
+            w: 20,
+            h: height,
+            color: '#0ff'
+        });
+    }
+
+    function resetGame() {
+        score = 0;
+        speed = 5;
+        obstacles = [];
+        player.y = GROUND_Y - 40;
+        player.dy = 0;
+        player.jumps = 0;
+        gameActive = true;
+        loop();
+    }
+
+    function update() {
+        if (!gameActive) return;
+
+        frame++;
+        score += 0.1;
+        scoreEl.innerText = Math.floor(score);
+
+        // Increase difficulty
+        speed += 0.001;
+
+        // Player Physics
+        player.dy += GRAVITY;
+        player.y += player.dy;
+
+        if (player.y + player.h > GROUND_Y) {
+            player.y = GROUND_Y - player.h;
+            player.dy = 0;
+            player.jumps = 0;
+        }
+
+        // Obstacle Management
+        if (frame % Math.floor(100 / (speed/5)) === 0) {
+            spawnObstacle();
+        }
+
+        obstacles.forEach((obs, index) => {
+            obs.x -= speed;
+
+            // Collision Detection
+            if (
+                player.x < obs.x + obs.w &&
+                player.x + player.w > obs.x &&
+                player.y < obs.y + obs.h &&
+                player.y
+    
